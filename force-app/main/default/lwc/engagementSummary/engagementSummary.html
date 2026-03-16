@@ -1,0 +1,24 @@
+<template>
+    <lightning-card title="Engagement Summary" icon-name="custom:custom18">
+        <div class="slds-var-p-around_medium">
+            <!-- Opportunity Amount using Wire (LDS) -->
+            <p><strong>Related Opportunity Amount: </strong>
+                <template if:true={oppAmount}>
+                    <lightning-formatted-number value={oppAmount} format-style="currency"></lightning-formatted-number>
+                </template>
+                <template if:false={oppAmount}>
+                    N/A
+                </template>
+            </p>
+
+            <!-- Stats from Apex -->
+            <p class="slds-var-m-top_small"><strong>Completed Tasks: </strong> {completedTasks}</p>
+            <p><strong>Upcoming Events: </strong> {upcomingEvents}</p>
+
+            <!-- Action Button -->
+            <div class="slds-var-m-top_medium">
+                <lightning-button label="Quick Follow-Up Call" variant="brand" onclick={handleQuickFollowUp}></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+</template>
