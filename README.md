@@ -1,18 +1,26 @@
-# Salesforce DX Project: Next Steps
+# Salesforce Developer Assessment - Acme Services 🚀
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+This repository contains the source code for the Salesforce Developer Assessment. The goal of this project was to deliver a "vertical slice" for Engagement management using a mix of Frontend (LWC), Backend (Apex), and declarative automation (Flows).
 
-## How Do You Plan to Deploy Your Changes?
+## 🛠️ Technologies Used
+* **Frontend:** Lightning Web Components (LWC), JavaScript, HTML, CSS.
+* **Backend:** Apex (SOQL, OOP).
+* **Automation:** Salesforce Record-Triggered Flows.
+* **Version Control:** Git & GitHub.
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+## 📂 Code Structure (Direct Links)
+To facilitate the code review, here are the direct links to the custom components built for this assessment:
 
-## Configure Your Salesforce DX Project
+### 1. Lightning Web Component (LWC)
+The `engagementSummary` component displays related Opportunity amounts and aggregate stats, along with a quick action to create Follow-Up Tasks.
+* 🔗 [engagementSummary.html](./force-app/main/default/lwc/engagementSummary/engagementSummary.html)
+* 🔗 [engagementSummary.js](./force-app/main/default/lwc/engagementSummary/engagementSummary.js)
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+### 2. Apex Controller
+The `EngagementController` handles heavy data aggregation (SOQL COUNT queries) that are not natively supported by Lightning Data Service.
+* 🔗[EngagementController.cls](./force-app/main/default/classes/EngagementController.cls)
 
-## Read All About It
-
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+## ⚙️ Assumptions & Best Practices
+* **No Hardcoded IDs:** All record IDs are fetched dynamically using Context (`$recordId`) or SOQL queries to ensure deployment safety.
+* **Separation of Concerns:** UI APIs (LDS) were used for record creation to optimize performance, while Apex was strictly reserved for complex aggregations.
+* **Fault Handling:** Error handling is implemented both in LWC (Toast Events on `.catch`) and in the Flow (Fault Paths).
