@@ -4,9 +4,9 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 // Importar métodos de Apex
 import getEngagementStats from '@salesforce/apex/EngagementController.getEngagementStats';
-import createFollowUpTask from '@salesforce/apex/EngagementController.createFollowUpTask'; // Nuevo método
+import createFollowUpTask from '@salesforce/apex/EngagementController.createFollowUpTask';
 
-// Importar referencias de campos
+// Importar referencias
 import RELATED_OPP_FIELD from '@salesforce/schema/Engagement__c.Related_Opportunity__c';
 import OPP_AMOUNT_FIELD from '@salesforce/schema/Opportunity.Amount';
 import ENGAGEMENT_NAME_FIELD from '@salesforce/schema/Engagement__c.Name';
@@ -20,7 +20,6 @@ export default class EngagementSummary extends LightningElement {
     completedTasks = 0;
     upcomingEvents = 0;
 
-    // Obtener datos del Engagement
     @wire(getRecord, { recordId: '$recordId', fields:[RELATED_OPP_FIELD, ENGAGEMENT_NAME_FIELD] })
     wiredEngagement({ error, data }) {
         if (data) {
@@ -29,7 +28,6 @@ export default class EngagementSummary extends LightningElement {
         }
     }
 
-    // Obtener Monto de Oportunidad (Demuestra uso de UI API)
     @wire(getRecord, { recordId: '$relatedOppId', fields:[OPP_AMOUNT_FIELD] })
     wiredOpportunity({ error, data }) {
         if (data) {
@@ -37,7 +35,6 @@ export default class EngagementSummary extends LightningElement {
         }
     }
 
-    // Obtener conteos de tareas/eventos
     @wire(getEngagementStats, { engagementId: '$recordId' })
     wiredStats({ error, data }) {
         if (data) {
@@ -46,14 +43,13 @@ export default class EngagementSummary extends LightningElement {
         }
     }
 
-    // Crear tarea llamando a APEX de forma imperativa
     handleQuickFollowUp() {
-        // Llamada a nuestro backend en Apex
+        // Llamamos al método de Apex pasándole los parámetros
         createFollowUpTask({ 
             engagementId: this.recordId, 
             engagementName: this.engagementName 
         })
-        .then((taskId) => {
+        .then(() => {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Success',
                 message: 'Follow-Up Task created successfully!',
