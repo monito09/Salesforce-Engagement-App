@@ -1,17 +1,22 @@
 import { LightningElement, api, wire } from 'lwc';
-import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
-import { createRecord } from 'lightning/uiRecordApi';
+import { getRecord, getFieldValue, createRecord } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getEngagementStats from '@salesforce/apex/EngagementController.getEngagementStats';
 
-// Importar referencias de campos
+// Importar referencias de campos de Engagement y Opportunity
 import RELATED_OPP_FIELD from '@salesforce/schema/Engagement__c.Related_Opportunity__c';
 import OPP_AMOUNT_FIELD from '@salesforce/schema/Opportunity.Amount';
 import ENGAGEMENT_NAME_FIELD from '@salesforce/schema/Engagement__c.Name';
+
+// Importar referencias del objeto Task (ESTA ES LA SOLUCIÓN)
 import TASK_OBJECT from '@salesforce/schema/Task';
+import TASK_TYPE_FIELD from '@salesforce/schema/Task.Type';
+import TASK_DATE_FIELD from '@salesforce/schema/Task.ActivityDate';
+import TASK_SUBJECT_FIELD from '@salesforce/schema/Task.Subject';
+import TASK_WHATID_FIELD from '@salesforce/schema/Task.WhatId';
 
 export default class EngagementSummary extends LightningElement {
-    @api recordId; // Recibe el ID del Engagement actual
+    @api recordId; 
     
     relatedOppId;
     oppAmount;
@@ -19,7 +24,6 @@ export default class EngagementSummary extends LightningElement {
     completedTasks = 0;
     upcomingEvents = 0;
 
-    // 1. LDS: Obtener el ID de la Oportunidad relacionada y el Nombre del Engagement
     @wire(getRecord, { recordId: '$recordId', fields:[RELATED_OPP_FIELD, ENGAGEMENT_NAME_FIELD] })
     wiredEngagement({ error, data }) {
         if (data) {
@@ -28,15 +32,13 @@ export default class EngagementSummary extends LightningElement {
         }
     }
 
-    // 2. LDS: Si hay Oportunidad, obtener su Amount
-    @wire(getRecord, { recordId: '$relatedOppId', fields: [OPP_AMOUNT_FIELD] })
+    @wire(getRecord, { recordId: '$relatedOppId', fields:[OPP_AMOUNT_FIELD] })
     wiredOpportunity({ error, data }) {
         if (data) {
             this.oppAmount = getFieldValue(data, OPP_AMOUNT_FIELD);
         }
     }
 
-    // 3. APEX: Obtener agregaciones
     @wire(getEngagementStats, { engagementId: '$recordId' })
     wiredStats({ error, data }) {
         if (data) {
@@ -45,17 +47,16 @@ export default class EngagementSummary extends LightningElement {
         }
     }
 
-    // 4. LDS: Crear Registro (Tarea) sin usar Apex
     handleQuickFollowUp() {
         let tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const fields = {
-            Type: 'Call',
-            ActivityDate: tomorrow.toISOString().split('T')[0], // Formato YYYY-MM-DD
-            Subject: `Follow-up on ${this.engagementName}`,
-            WhatId: this.recordId
-        };
+        // Construir los campos usando los Schema Imports (Best Practice)
+        const fields = {};
+        fields[TASK_TYPE_FIELD.fieldApiName] = 'Call';
+        fields[TASK_DATE_FIELD.fieldApiName] = tomorrow.toISOString().split('T')[0];
+        fields[TASK_SUBJECT_FIELD.fieldApiName] = `Follow-up on ${this.engagementName}`;
+        fields[TASK_WHATID_FIELD.fieldApiName] = this.recordId;
 
         const recordInput = { apiName: TASK_OBJECT.objectApiName, fields };
 
@@ -70,7 +71,7 @@ export default class EngagementSummary extends LightningElement {
             .catch(error => {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error creating task',
-                    message: error.body.message,
+                    message: error.body ? error.body.message : error.message,
                     variant: 'error'
                 }));
             });
